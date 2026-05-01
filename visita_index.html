@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Hoja de Visita a la Oficina de Enfermería</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #0f1419; --bg-elev: #1a2230; --bg-elev2: #232d3f;
+    --border: #2d3a52; --text: #e6edf3; --text-muted: #8b95a7;
+    --accent: #4a9eff; --accent-hover: #3b8ae6;
+    --green: #3fb950; --red: #f85149; --yellow: #d4a72c; --purple: #a371f7;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+  .topbar { background: var(--bg-elev); border-bottom: 1px solid var(--border); padding: 14px 22px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .topbar h1 { font-size: 17px; margin: 0; font-weight: 700; letter-spacing: 0.3px; }
+  .topbar .sub { color: var(--text-muted); font-size: 12px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tabs { background: var(--bg-elev); border-bottom: 1px solid var(--border); padding: 0 22px; display: flex; gap: 4px; }
+  .tab { background: transparent; border: none; color: var(--text-muted); padding: 12px 18px; font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .btn { background: var(--accent); color: white; border: none; padding: 9px 16px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.15s; }
+  .btn:hover { background: var(--accent-hover); }
+  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn.ghost:hover { background: var(--bg-elev2); }
+  .btn.danger { background: #b1342f; }
+  .btn.danger:hover { background: #8b2723; }
+  .btn.small { padding: 6px 12px; font-size: 12px; }
+  .layout { display: grid; grid-template-columns: 320px 1fr; gap: 16px; padding: 16px; flex: 1; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+  .panel { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .panel h2 { margin: 0 0 12px; font-size: 14px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.6px; }
+  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .cal-nav { background: var(--bg-elev2); border: 1px solid var(--border); color: var(--text); width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  .cal-nav:hover { background: var(--border); }
+  .cal-month { font-weight: 700; font-size: 14px; text-transform: capitalize; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-dow { text-align: center; font-size: 10px; color: var(--text-muted); text-transform: uppercase; padding: 4px 0; font-weight: 700; }
+  .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; border-radius: 5px; cursor: pointer; color: var(--text); position: relative; background: var(--bg-elev2); }
+  .cal-day.empty { background: transparent; cursor: default; }
+  .cal-day:hover:not(.empty) { background: var(--border); }
+  .cal-day.has-visit { background: rgba(74, 158, 255, 0.18); color: var(--accent); font-weight: 700; }
+  .cal-day.has-visit::after { content: ''; position: absolute; bottom: 3px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+  .cal-day.today { border: 1px solid var(--accent); }
+  .visit-list { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
+  .visit-list::-webkit-scrollbar { width: 8px; }
+  .visit-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .visit-item { background: var(--bg-elev2); border: 1px solid var(--border); border-radius: 7px; padding: 10px 12px; cursor: pointer; transition: border-color 0.15s; }
+  .visit-item:hover { border-color: var(--accent); }
+  .visit-item.active { border-color: var(--accent); background: rgba(74,158,255,0.08); }
+  .visit-item .name { font-weight: 700; font-size: 13px; }
+  .visit-item .meta { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 11px; margin-top: 3px; }
+  .empty-state { text-align: center; padding: 20px; color: var(--text-muted); font-size: 12px; }
+  .form-area { display: flex; flex-direction: column; gap: 14px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
+  .field input, .field select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 6px; font-size: 13px; font-family: inherit; outline: none; }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  fieldset { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px 14px; margin: 0; background: var(--bg-elev2); }
+  fieldset legend { padding: 0 8px; font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
+  .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 6px 12px; }
+  .check { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; font-size: 13px; padding: 4px 0; }
+  .check input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+  .check-with-input { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; }
+  .check-with-input input[type="text"] { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px 8px; border-radius: 5px; font-size: 12px; }
+  .form-footer { display: flex; justify-content: flex-end; gap: 8px; padding-top: 6px; }
+  .radio-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .inline-input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 5px; font-size: 12px; min-width: 180px; }
+  .inline-input:focus { border-color: var(--accent); outline: none; }
+  .summary-view { display: none; padding: 16px; flex-direction: column; gap: 16px; }
+  .summary-view.active { display: flex; }
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .stat-card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .stat-card .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+  .stat-card .value { font-size: 28px; font-weight: 800; margin-top: 4px; color: var(--accent); }
+  .stat-card.green .value { color: var(--green); }
+  .stat-card.yellow .value { color: var(--yellow); }
+  .stat-card.red .value { color: var(--red); }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+  .summary-card { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .summary-card.full-width { grid-column: 1 / -1; }
+  .summary-card h3 { margin: 0 0 12px; font-size: 13px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
+  .summary-card h3 .total { color: var(--text-muted); font-size: 11px; font-weight: 600; }
+  .bar-row { display: grid; grid-template-columns: 1fr 40px; gap: 10px; align-items: center; margin-bottom: 6px; font-size: 12px; }
+  .bar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-track { background: var(--bg-elev2); height: 18px; border-radius: 4px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+  .bar-fill.green { background: var(--green); }
+  .bar-fill.yellow { background: var(--yellow); }
+  .bar-fill.red { background: var(--red); }
+  .bar-fill.purple { background: var(--purple); }
+  .bar-count { text-align: right; color: var(--text-muted); font-weight: 700; font-size: 12px; }
+  .empty-summary { text-align: center; padding: 30px; color: var(--text-muted); font-size: 13px; }
+  .query-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .query-controls select, .query-controls input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 6px; font-size: 13px; min-width: 200px; font-family: inherit; }
+  .query-result { background: var(--bg-elev2); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+  .query-result .big-num { font-size: 36px; font-weight: 800; color: var(--accent); }
+  .query-result .desc { color: var(--text-muted); font-size: 12px; }
+  .query-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+  .query-table th, .query-table td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  .query-table th { color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 700; }
+  .query-table td.count { text-align: right; font-weight: 700; color: var(--accent); width: 60px; }
+  .print-form-view, .print-summary-view, .print-query-view { display: none; background: white; color: black; font-family: 'Helvetica Neue', Arial, sans-serif; }
+  @media print {
+    body { background: white !important; }
+    .app, .summary-view { display: none !important; }
+    .print-form-view.active, .print-summary-view.active, .print-query-view.active { display: block !important; }
+    @page { size: letter; margin: 0.4in; }
+  }
+  .print-form-view .page, .print-summary-view .page, .print-query-view .page { width: 100%; padding: 0; color: #000; }
+  .print-form-view .header, .print-summary-view .header, .print-query-view .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .print-form-view .header img.edu, .print-summary-view .header img.edu, .print-query-view .header img.edu { height: 70px; }
+  .print-form-view .header img.nurse, .print-summary-view .header img.nurse, .print-query-view .header img.nurse { height: 95px; }
+  .print-form-view h1.title, .print-summary-view h1.title, .print-query-view h1.title { text-align: center; font-size: 13px; font-weight: 800; margin: 8px 0 10px; }
+  .print-form-view table.form { width: 100%; border-collapse: collapse; border: 2px solid #000; font-size: 10.5px; color: #000; }
+  .print-form-view table.form td { border: 1px solid #000; padding: 5px 7px; vertical-align: top; }
+  .print-form-view .lbl-bold { font-weight: 700; }
+  .print-form-view .section-header td { background: #e7f0e0 !important; text-align: center; font-weight: 700; font-size: 11.5px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-form-view .accion-label { background: #e7f0e0 !important; font-weight: 700; width: 18%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-form-view .options-block { line-height: 1.85; }
+  .print-form-view .opt { display: inline-block; margin-right: 10px; white-space: nowrap; }
+  .print-form-view .mark { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; margin-right: 4px; vertical-align: middle; text-align: center; line-height: 11px; font-size: 11px; font-weight: 900; color: #000; }
+  .print-form-view .mark.on::before { content: '\2713'; }
+  .print-form-view .underline-text { border-bottom: 1px solid #000; display: inline-block; min-width: 80px; padding: 0 4px; }
+  .print-summary-view .meta-row, .print-query-view .meta-row { font-size: 11px; color: #000; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 4px; }
+  .print-summary-view .summary-section, .print-query-view .summary-section { margin-bottom: 12px; page-break-inside: avoid; }
+  .print-summary-view .summary-section h2, .print-query-view .summary-section h2 { background: #e7f0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; border: 1px solid #000; margin: 0; padding: 5px 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+  .print-summary-view table.tally, .print-query-view table.tally { width: 100%; border-collapse: collapse; border: 1px solid #000; border-top: none; font-size: 11px; }
+  .print-summary-view table.tally th, .print-summary-view table.tally td, .print-query-view table.tally th, .print-query-view table.tally td { border: 1px solid #000; padding: 4px 8px; text-align: left; }
+  .print-summary-view table.tally th, .print-query-view table.tally th { background: #f5f5f5 !important; font-weight: 700; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-summary-view table.tally td.count, .print-query-view table.tally td.count { text-align: center; width: 70px; font-weight: 700; }
+  .print-summary-view table.tally td.bar-cell { width: 35%; padding: 4px 8px; }
+  .print-summary-view .pbar { background: #e0e0e0; height: 10px; border-radius: 2px; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-summary-view .pbar > div { background: #0f4d2a; height: 100%; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="topbar">
+    <div>
+      <h1>Hoja de Visita — Oficina de Enfermería</h1>
+      <div class="sub">Departamento de Educación · Programa de Enfermería Escolar</div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" id="btn-new">+ Nueva visita</button>
+      <button class="btn" id="btn-print">Imprimir</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="visitas">Visitas</button>
+    <button class="tab" data-tab="resumen">Resumen</button>
+  </div>
+  <div class="layout" id="tab-visitas">
+    <div style="display:flex; flex-direction:column; gap:16px;">
+      <div class="panel">
+        <h2>Calendario</h2>
+        <div class="cal-header">
+          <button class="cal-nav" id="cal-prev">&#8249;</button>
+          <div class="cal-month" id="cal-month"></div>
+          <button class="cal-nav" id="cal-next">&#8250;</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="panel">
+        <h2>Historial (<span id="visit-count">0</span>)</h2>
+        <div class="visit-list" id="visit-list"></div>
+      </div>
+    </div>
+    <div class="panel form-area" id="form-area">
+      <h2 id="form-title">Nueva visita</h2>
+      <div class="form-grid">
+        <div class="field"><label>Nombre de la Escuela</label><input type="text" id="f-escuela"></div>
+        <div class="field"><label>Código</label><input type="text" id="f-codigo"></div>
+        <div class="field"><label>Nombre del enfermero</label><input type="text" id="f-enfermero"></div>
+        <div class="field"><label>Nombre del Estudiante</label><input type="text" id="f-estudiante"></div>
+        <div class="field"><label># Estudiante</label><input type="text" id="f-numero"></div>
+        <div class="field"><label>Grado / Grupo</label><input type="text" id="f-grado"></div>
+        <div class="field"><label>Fecha</label><input type="date" id="f-fecha"></div>
+        <div class="field"><label>Hora de llegada</label><input type="time" id="f-llegada"></div>
+        <div class="field"><label>Hora de salida</label><input type="time" id="f-salida"></div>
+      </div>
+      <fieldset>
+        <legend>Quién refiere</legend>
+        <div class="radio-row">
+          <label class="check"><input type="radio" name="refiere" value="maestro"> Maestro</label>
+          <label class="check"><input type="radio" name="refiere" value="auto"> Auto referido</label>
+          <label class="check"><input type="radio" name="refiere" value="otro"> Otro</label>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+          <input type="text" id="f-maestro-nombre" class="inline-input" placeholder="Nombre del maestro (si aplica)" style="flex:1; min-width:200px;">
+          <input type="text" id="f-refiere-otro" class="inline-input" placeholder="Especifique 'otro' (si aplica)" style="flex:1; min-width:200px;">
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Razón de la visita — Seguimiento a un plan de servicio</legend>
+        <div class="checkbox-grid">
+          <label class="check"><input type="checkbox" data-cat="seguimiento" value="Asma"> Asma</label>
+          <label class="check"><input type="checkbox" data-cat="seguimiento" value="Alergias"> Alergias</label>
+          <label class="check"><input type="checkbox" data-cat="seguimiento" value="Diabetes"> Diabetes</label>
+          <label class="check"><input type="checkbox" data-cat="seguimiento" value="Epilepsia"> Epilepsia</label>
+          <div class="check-with-input">
+            <label class="check"><input type="checkbox" data-cat="seguimiento" value="Otro"> Otro:</label>
+            <input type="text" id="f-seg-otro" placeholder="Especifique">
+          </div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Accidente o lesiones</legend>
+        <div class="checkbox-grid">
+          <label class="check"><input type="checkbox" data-cat="accidente" value="asfixia"> Asfixia</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="ahogamiento"> Ahogamiento</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="amputación"> Amputación</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="caída"> Caída</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="cortadura"> Cortadura</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="envenenamiento"> Envenenamiento</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="herida"> Herida</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="intoxicación"> Intoxicación</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="laceraciones"> Laceraciones</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="moretones"> Moretones</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="perdida de diente"> Pérdida de diente</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="posible factura"> Posible fractura</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="sangrado nasal"> Sangrado nasal</label>
+          <label class="check"><input type="checkbox" data-cat="accidente" value="quemadura"> Quemadura</label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Signos y síntomas de enfermedad</legend>
+        <div class="checkbox-grid">
+          <div class="check-with-input">
+            <label class="check"><input type="checkbox" data-cat="sintomas" value="alergia a"> Alergia a:</label>
+            <input type="text" id="f-alergia-a" placeholder="Especifique">
+          </div>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="calambre"> Calambre</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="dolor abdominal"> Dolor abdominal</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="dolor de cabeza"> Dolor de cabeza</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="dolor de garganta"> Dolor de garganta</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="dolor de oído"> Dolor de oído</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="erupción en la piel"> Erupción en la piel</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="fatiga"> Fatiga</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="fiebre"> Fiebre</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="mareo"> Mareo</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="nausea"> Náusea</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="picadura de insecto"> Picadura de insecto</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="piel enrojecida"> Piel enrojecida</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="sofocación"> Sofocación</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="tos"> Tos</label>
+          <label class="check"><input type="checkbox" data-cat="sintomas" value="vómito"> Vómito</label>
+          <div class="check-with-input">
+            <label class="check"><input type="checkbox" data-cat="sintomas" value="otro"> Otro:</label>
+            <input type="text" id="f-sin-otro" placeholder="Explique">
+          </div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Acción realizada</legend>
+        <div class="checkbox-grid">
+          <label class="check"><input type="checkbox" data-cat="accion" value="regreso a clase"> Regreso a clase</label>
+          <label class="check"><input type="checkbox" data-cat="accion" value="se envió a sala de emergencia"> Se envió a sala de emergencia</label>
+          <label class="check"><input type="checkbox" data-cat="accion" value="madre, padre o encargado se llevó al estudiante"> Madre, padre o encargado se llevó al estudiante</label>
+        </div>
+      </fieldset>
+      <div class="form-footer">
+        <button class="btn danger" id="btn-delete" style="margin-right:auto; display:none;">Eliminar</button>
+        <button class="btn ghost" id="btn-clear">Limpiar</button>
+        <button class="btn" id="btn-save">Guardar visita</button>
+      </div>
+    </div>
+  </div>
+  <div class="summary-view" id="tab-resumen">
+    <div class="stat-row" id="summary-stats"></div>
+    <div class="summary-grid" id="summary-grid"></div>
+    <div class="summary-card full-width">
+      <h3>Consulta personalizada — Maestro / Estudiante <button class="btn small" id="btn-print-query" style="margin-left:auto;">Imprimir consulta</button></h3>
+      <div class="query-controls">
+        <select id="q-maestro"><option value="">— Todos los maestros —</option></select>
+        <select id="q-estudiante"><option value="">— Todos los estudiantes —</option></select>
+        <button class="btn" id="btn-consultar">Consultar</button>
+      </div>
+      <div id="query-result"></div>
+    </div>
+  </div>
+</div>
+<div class="print-form-view" id="print-form-view">
+  <div class="page">
+    <div class="header">
+      <img class="edu" id="img-edu-1" alt="Departamento de Educación">
+      <img class="nurse" id="img-nurse-1" alt="Programa de Enfermería Escolar">
+    </div>
+    <h1 class="title">HOJA DE VISITA A LA OFICINA DE ENFERMERÍA</h1>
+    <table class="form">
+      <tr>
+        <td style="width:38%"><span class="lbl-bold">Nombre de la Escuela:</span> <span class="underline-text" id="p-escuela"></span></td>
+        <td style="width:22%"><span class="lbl-bold">Código:</span> <span class="underline-text" id="p-codigo"></span></td>
+        <td><span class="lbl-bold">Nombre del enfermero:</span> <span class="underline-text" id="p-enfermero"></span></td>
+      </tr>
+      <tr>
+        <td rowspan="2"><span class="lbl-bold">Nombre del Estudiante</span>: <span class="underline-text" style="min-width:170px;" id="p-estudiante"></span></td>
+        <td rowspan="2"><span class="lbl-bold"># Estudiante</span><br><span class="underline-text" style="min-width:120px; margin-top:4px;" id="p-numero"></span></td>
+        <td><span class="lbl-bold">Grado/Grupo:</span> <span class="underline-text" id="p-grado"></span> &nbsp;&nbsp;<span class="lbl-bold">Fecha:</span> <span class="underline-text" id="p-fecha"></span></td>
+      </tr>
+      <tr>
+        <td><span class="lbl-bold">Hora llegada:</span> <span class="underline-text" id="p-llegada"></span> &nbsp;&nbsp;<span class="lbl-bold">Hora de salida:</span> <span class="underline-text" id="p-salida"></span></td>
+      </tr>
+      <tr>
+        <td colspan="3">
+          <span class="lbl-bold">Quien refiere</span>:
+          <span class="opt"><span class="mark" id="p-ref-maestro"></span> maestro</span>
+          <span class="opt"><span class="mark" id="p-ref-auto"></span> auto referido</span>
+          <span class="opt"><span class="mark" id="p-ref-otro"></span> otro</span>
+          <span class="underline-text" id="p-ref-detail-text" style="min-width:200px;"></span>
+        </td>
+      </tr>
+      <tr class="section-header"><td colspan="3">Razón de la Visita:</td></tr>
+      <tr>
+        <td style="width:38%">Seguimiento a un plan de servicio:</td>
+        <td colspan="2" class="options-block">
+          <span class="opt"><span class="mark" id="p-seg-Asma"></span> Asma</span>
+          <span class="opt"><span class="mark" id="p-seg-Alergias"></span> Alergias</span>
+          <span class="opt"><span class="mark" id="p-seg-Diabetes"></span> Diabetes</span>
+          <span class="opt"><span class="mark" id="p-seg-Epilepsia"></span> Epilepsia</span><br>
+          <span class="opt"><span class="mark" id="p-seg-Otro"></span> Otro (especifique)</span>
+          <span class="underline-text" id="p-seg-otro-text" style="min-width:200px;"></span>
+        </td>
+      </tr>
+      <tr><td>Accidente o lesiones</td><td colspan="2" class="options-block" id="p-accidente-block"></td></tr>
+      <tr><td>Signo y síntomas de enfermedad:</td><td colspan="2" class="options-block" id="p-sintomas-block"></td></tr>
+      <tr>
+        <td class="accion-label">Acción realizada:</td>
+        <td colspan="2">
+          <span class="opt"><span class="mark" id="p-acc-regreso"></span> regreso a clase</span>
+          <span class="opt"><span class="mark" id="p-acc-emergencia"></span> se envió a sala de emergencia</span>
+          <span class="opt"><span class="mark" id="p-acc-padre"></span> madre, padre o encargado se llevó al estudiante</span>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div class="print-summary-view" id="print-summary-view">
+  <div class="page">
+    <div class="header">
+      <img class="edu" id="img-edu-2" alt="Departamento de Educación">
+      <img class="nurse" id="img-nurse-2" alt="Programa de Enfermería Escolar">
+    </div>
+    <h1 class="title">RESUMEN — HOJA DE VISITA A LA OFICINA DE ENFERMERÍA</h1>
+    <div class="meta-row">
+      <span><strong>Total de visitas registradas:</strong> <span id="ps-total">0</span></span>
+      <span><strong>Generado:</strong> <span id="ps-date"></span></span>
+    </div>
+    <div class="summary-section"><h2>Quién refiere</h2><table class="tally" id="ps-refiere"></table></div>
+    <div class="summary-section"><h2>Razón de la visita — Seguimiento a un plan de servicio</h2><table class="tally" id="ps-seguimiento"></table></div>
+    <div class="summary-section"><h2>Accidente o lesiones</h2><table class="tally" id="ps-accidente"></table></div>
+    <div class="summary-section"><h2>Signos y síntomas de enfermedad</h2><table class="tally" id="ps-sintomas"></table></div>
+    <div class="summary-section"><h2>Acción realizada</h2><table class="tally" id="ps-accion"></table></div>
+  </div>
+</div>
+<div class="print-query-view" id="print-query-view">
+  <div class="page">
+    <div class="header">
+      <img class="edu" id="img-edu-3" alt="Departamento de Educación">
+      <img class="nurse" id="img-nurse-3" alt="Programa de Enfermería Escolar">
+    </div>
+    <h1 class="title">CONSULTA DE REFERENCIAS — OFICINA DE ENFERMERÍA</h1>
+    <div class="meta-row">
+      <span><strong>Filtro:</strong> <span id="pq-filter"></span></span>
+      <span><strong>Generado:</strong> <span id="pq-date"></span></span>
+    </div>
+    <div class="summary-section">
+      <h2 id="pq-title">Resultado de la consulta</h2>
+      <table class="tally" id="pq-table"></table>
+    </div>
+  </div>
+</div>
+<script>
+(function() {
+  var EDU = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 130"><defs><linearGradient id="s" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#1f7a3d"/><stop offset="1" stop-color="#0f4d2a"/></linearGradient></defs><path d="M20 18 L92 18 L92 70 Q92 105 56 118 Q20 105 20 70 Z" fill="url(#s)" stroke="#c9a227" stroke-width="2.5"/><circle cx="56" cy="55" r="14" fill="#c9a227"/><text x="56" y="60" text-anchor="middle" font-size="16" font-weight="bold" fill="#0f4d2a" font-family="serif">PR</text><text x="115" y="35" font-family="Arial,sans-serif" font-size="11" letter-spacing="2" fill="#444">DEPARTAMENTO DE</text><text x="115" y="78" font-family="Georgia,serif" font-size="40" font-weight="800" fill="#0f4d2a" letter-spacing="2">EDUCACIÓN</text><rect x="115" y="86" width="270" height="2" fill="#c9a227"/><text x="115" y="105" font-family="Arial,sans-serif" font-size="9" letter-spacing="2" fill="#444">GOBIERNO DE PUERTO RICO</text></svg>');
+  var NURSE = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 130"><rect width="100" height="130" fill="#1a1a1a" rx="4"/><path d="M50 90 C 18 65, 18 32, 35 26 C 45 23, 50 32, 50 38 C 50 32, 55 23, 65 26 C 82 32, 82 65, 50 90 Z" fill="none" stroke="#4dd0c8" stroke-width="2"/><rect x="38" y="38" width="24" height="20" fill="#f4c542" rx="3"/><path d="M50 30 Q52 25 50 22 Q48 25 50 30" fill="#f4c542"/><rect x="32" y="55" width="36" height="3" fill="#5a8c4c"/><path d="M30 55 Q22 65 30 75" stroke="#9aa39a" stroke-width="1.5" fill="none"/><path d="M70 55 Q78 65 70 75" stroke="#9aa39a" stroke-width="1.5" fill="none"/><text x="50" y="105" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" font-weight="700" fill="#4dd0c8">PROGRAMA DE</text><text x="50" y="115" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="800" fill="white">ENFERMERÍA</text><text x="50" y="123" text-anchor="middle" font-family="Arial,sans-serif" font-size="5" fill="#4dd0c8">ESCOLAR</text></svg>');
+  ['img-edu-1','img-edu-2','img-edu-3'].forEach(function(id){var e=document.getElementById(id); if(e) e.src=EDU;});
+  ['img-nurse-1','img-nurse-2','img-nurse-3'].forEach(function(id){var e=document.getElementById(id); if(e) e.src=NURSE;});
+
+  const STORAGE_KEY = 'hoja_visita_enf_v1';
+  const DEFAULTS = { escuela: 'Antonio Ledée Colón', codigo: '58123', enfermero: 'Juan Colón Rubert' };
+  let visits = [];
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) visits = JSON.parse(raw); } catch (e) { visits = []; }
+  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(visits)); } catch (e) {} }
+
+  let currentId = null;
+  let activeTab = 'visitas';
+  let calCursor = new Date();
+  calCursor.setDate(1);
+
+  function uid() { return 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
+  function $(s) { return document.querySelector(s); }
+  function $$(s) { return Array.from(document.querySelectorAll(s)); }
+
+  function getFormData() {
+    const d = {
+      escuela: $('#f-escuela').value, codigo: $('#f-codigo').value,
+      enfermero: $('#f-enfermero').value, estudiante: $('#f-estudiante').value,
+      numero: $('#f-numero').value, grado: $('#f-grado').value,
+      fecha: $('#f-fecha').value, llegada: $('#f-llegada').value, salida: $('#f-salida').value,
+      refiere: (document.querySelector('input[name="refiere"]:checked') || {}).value || '',
+      maestroNombre: $('#f-maestro-nombre').value.trim(),
+      refiereOtro: $('#f-refiere-otro').value.trim(),
+      segOtroText: $('#f-seg-otro').value,
+      alergiaA: $('#f-alergia-a').value, sinOtroText: $('#f-sin-otro').value,
+      seguimiento: [], accidente: [], sintomas: [], accion: []
+    };
+    $$('input[type="checkbox"][data-cat]').forEach(cb => { if (cb.checked) d[cb.dataset.cat].push(cb.value); });
+    return d;
+  }
+  function setFormData(d) {
+    $('#f-escuela').value = d.escuela || ''; $('#f-codigo').value = d.codigo || '';
+    $('#f-enfermero').value = d.enfermero || ''; $('#f-estudiante').value = d.estudiante || '';
+    $('#f-numero').value = d.numero || ''; $('#f-grado').value = d.grado || '';
+    $('#f-fecha').value = d.fecha || ''; $('#f-llegada').value = d.llegada || '';
+    $('#f-salida').value = d.salida || '';
+    $('#f-maestro-nombre').value = d.maestroNombre || '';
+    $('#f-refiere-otro').value = d.refiereOtro || '';
+    $('#f-seg-otro').value = d.segOtroText || ''; $('#f-alergia-a').value = d.alergiaA || '';
+    $('#f-sin-otro').value = d.sinOtroText || '';
+    $$('input[name="refiere"]').forEach(r => r.checked = (r.value === d.refiere));
+    $$('input[type="checkbox"][data-cat]').forEach(cb => {
+      const arr = d[cb.dataset.cat] || []; cb.checked = arr.includes(cb.value);
+    });
+  }
+  function clearForm() {
+    setFormData({ escuela: DEFAULTS.escuela, codigo: DEFAULTS.codigo, enfermero: DEFAULTS.enfermero, seguimiento: [], accidente: [], sintomas: [], accion: [] });
+  }
+  function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function formatDate(iso) { if(!iso) return 'Sin fecha'; const p=iso.split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : iso; }
+  function capitalize(s) { return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+
+  function renderList() {
+    const list = $('#visit-list');
+    $('#visit-count').textContent = visits.length;
+    if (!visits.length) { list.innerHTML = '<div class="empty-state">No hay visitas guardadas</div>'; return; }
+    const sorted = [...visits].sort((a,b) => (b.fecha || '').localeCompare(a.fecha || ''));
+    list.innerHTML = sorted.map(v =>
+      '<div class="visit-item ' + (v.id === currentId ? 'active' : '') + '" data-id="' + v.id + '">' +
+        '<div class="name">' + escapeHtml(v.estudiante || '(sin nombre)') + '</div>' +
+        '<div class="meta"><span>' + formatDate(v.fecha) + (v.grado ? ' · ' + escapeHtml(v.grado) : '') + '</span><span>' + (v.llegada || '') + '</span></div>' +
+      '</div>'
+    ).join('');
+    list.querySelectorAll('.visit-item').forEach(el => el.addEventListener('click', () => loadVisit(el.dataset.id)));
+  }
+  function loadVisit(id) {
+    const v = visits.find(x => x.id === id); if (!v) return;
+    currentId = id; setFormData(v);
+    $('#form-title').textContent = 'Editando visita — ' + (v.estudiante || '(sin nombre)');
+    $('#btn-delete').style.display = 'inline-block';
+    renderList(); switchTab('visitas');
+  }
+  function newVisit() {
+    currentId = null; clearForm();
+    $('#form-title').textContent = 'Nueva visita';
+    $('#btn-delete').style.display = 'none';
+    $('#f-fecha').value = new Date().toISOString().slice(0,10);
+    renderList();
+  }
+  function saveVisit() {
+    const data = getFormData();
+    if (!data.estudiante && !data.fecha) { alert('Ingrese al menos el nombre del estudiante o la fecha.'); return; }
+    if (currentId) {
+      const idx = visits.findIndex(v => v.id === currentId);
+      if (idx >= 0) visits[idx] = Object.assign({}, visits[idx], data, { id: currentId });
+    } else {
+      const v = Object.assign({ id: uid() }, data); visits.push(v); currentId = v.id;
+    }
+    save(); renderList(); renderCalendar(); renderSummary();
+    $('#form-title').textContent = 'Editando visita — ' + (data.estudiante || '(sin nombre)');
+    $('#btn-delete').style.display = 'inline-block';
+    flash('Visita guardada');
+  }
+  function deleteVisit() {
+    if (!currentId) return;
+    if (!confirm('¿Eliminar esta visita?')) return;
+    visits = visits.filter(v => v.id !== currentId);
+    save(); newVisit(); renderCalendar(); renderSummary();
+  }
+  function flash(msg) {
+    const f = document.createElement('div'); f.textContent = msg;
+    f.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#3fb950; color:white; padding:10px 16px; border-radius:6px; font-weight:600; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    document.body.appendChild(f); setTimeout(() => f.remove(), 1800);
+  }
+
+  function renderCalendar() {
+    const year = calCursor.getFullYear(), month = calCursor.getMonth();
+    const monthNames = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    $('#cal-month').textContent = monthNames[month] + ' ' + year;
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const todayStr = new Date().toISOString().slice(0,10);
+    const visitDates = new Set(visits.map(v => v.fecha).filter(Boolean));
+    const dows = ['D','L','M','M','J','V','S'];
+    let html = dows.map(d => '<div class="cal-dow">' + d + '</div>').join('');
+    for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
+    for (let d = 1; d <= daysInMonth; d++) {
+      const iso = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      const cls = ['cal-day'];
+      if (visitDates.has(iso)) cls.push('has-visit');
+      if (iso === todayStr) cls.push('today');
+      html += '<div class="' + cls.join(' ') + '" data-date="' + iso + '">' + d + '</div>';
+    }
+    $('#cal-grid').innerHTML = html;
+    $$('.cal-day[data-date]').forEach(el => {
+      el.addEventListener('click', () => {
+        const date = el.dataset.date;
+        const v = visits.find(x => x.fecha === date);
+        if (v) loadVisit(v.id);
+        else { newVisit(); $('#f-fecha').value = date; }
+      });
+    });
+  }
+
+  function countCategory(field) {
+    const counts = {};
+    visits.forEach(v => { (v[field] || []).forEach(item => { counts[item] = (counts[item]||0) + 1; }); });
+    return counts;
+  }
+  function countRefiere() {
+    const counts = { 'Maestro': 0, 'Auto referido': 0, 'Otro': 0, 'Sin especificar': 0 };
+    visits.forEach(v => {
+      const r = v.refiere;
+      if (r === 'maestro') counts['Maestro']++;
+      else if (r === 'auto') counts['Auto referido']++;
+      else if (r === 'otro') counts['Otro']++;
+      else counts['Sin especificar']++;
+    });
+    return counts;
+  }
+  function uniqueMaestros() {
+    const set = new Set();
+    visits.forEach(v => { if (v.refiere === 'maestro' && (v.maestroNombre||'').trim()) set.add(v.maestroNombre.trim()); });
+    return Array.from(set).sort();
+  }
+  function uniqueEstudiantes() {
+    const set = new Set();
+    visits.forEach(v => { if ((v.estudiante||'').trim()) set.add(v.estudiante.trim()); });
+    return Array.from(set).sort();
+  }
+  function renderBars(counts, colorClass) {
+    const entries = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+    if (!entries.length) return '<div class="empty-summary">Sin datos</div>';
+    const max = Math.max.apply(null, entries.map(e => e[1]));
+    return entries.map(([label, count]) => {
+      const pct = max ? (count / max) * 100 : 0;
+      return '<div class="bar-row"><div><div class="bar-label">' + capitalize(escapeHtml(label)) + '</div><div class="bar-track"><div class="bar-fill ' + colorClass + '" style="width:' + pct + '%"></div></div></div><div class="bar-count">' + count + '</div></div>';
+    }).join('');
+  }
+  function renderSummary() {
+    const total = visits.length;
+    const stats = $('#summary-stats'), grid = $('#summary-grid');
+    if (!total) {
+      stats.innerHTML = '';
+      grid.innerHTML = '<div class="empty-summary">Aún no hay visitas registradas. Guarde al menos una visita para ver el resumen.</div>';
+    } else {
+      const seguimiento = countCategory('seguimiento');
+      const accidente = countCategory('accidente');
+      const sintomas = countCategory('sintomas');
+      const accion = countCategory('accion');
+      const refiere = countRefiere();
+      const sumValues = (o) => Object.values(o).reduce((a,b) => a+b, 0);
+      const visitsConSeg = visits.filter(v => (v.seguimiento||[]).length > 0).length;
+      const visitsConAcc = visits.filter(v => (v.accidente||[]).length > 0).length;
+      const visitsConSin = visits.filter(v => (v.sintomas||[]).length > 0).length;
+      stats.innerHTML =
+        '<div class="stat-card"><div class="label">Total de visitas</div><div class="value">' + total + '</div></div>' +
+        '<div class="stat-card green"><div class="label">Con seguimiento de plan</div><div class="value">' + visitsConSeg + '</div></div>' +
+        '<div class="stat-card red"><div class="label">Con accidente / lesión</div><div class="value">' + visitsConAcc + '</div></div>' +
+        '<div class="stat-card yellow"><div class="label">Con signos / síntomas</div><div class="value">' + visitsConSin + '</div></div>';
+      grid.innerHTML =
+        '<div class="summary-card"><h3>Quién refiere <span class="total">' + total + ' visitas</span></h3>' + renderBars(refiere, '') + '</div>' +
+        '<div class="summary-card"><h3>Plan de servicio <span class="total">' + sumValues(seguimiento) + ' marcas</span></h3>' + renderBars(seguimiento, 'green') + '</div>' +
+        '<div class="summary-card"><h3>Accidentes y lesiones <span class="total">' + sumValues(accidente) + ' marcas</span></h3>' + renderBars(accidente, 'red') + '</div>' +
+        '<div class="summary-card"><h3>Signos y síntomas <span class="total">' + sumValues(sintomas) + ' marcas</span></h3>' + renderBars(sintomas, 'yellow') + '</div>' +
+        '<div class="summary-card"><h3>Acción realizada <span class="total">' + sumValues(accion) + ' marcas</span></h3>' + renderBars(accion, 'purple') + '</div>';
+    }
+    const mSel = $('#q-maestro');
+    const eSel = $('#q-estudiante');
+    if (mSel && eSel) {
+      const maestros = uniqueMaestros();
+      const estudiantes = uniqueEstudiantes();
+      mSel.innerHTML = '<option value="">— Todos los maestros —</option>' + maestros.map(m => '<option value="'+escapeHtml(m)+'">'+escapeHtml(m)+'</option>').join('');
+      eSel.innerHTML = '<option value="">— Todos los estudiantes —</option>' + estudiantes.map(e => '<option value="'+escapeHtml(e)+'">'+escapeHtml(e)+'</option>').join('');
+    }
+  }
+
+  let lastQuery = null;
+  function runQuery() {
+    const maestro = $('#q-maestro').value.trim();
+    const estudiante = $('#q-estudiante').value.trim();
+    const filtered = visits.filter(v => {
+      if (v.refiere !== 'maestro') return false;
+      if (maestro && (v.maestroNombre||'').trim() !== maestro) return false;
+      if (estudiante && (v.estudiante||'').trim() !== estudiante) return false;
+      return true;
+    });
+    let result;
+    if (maestro && estudiante) {
+      result = { type: 'specific', title: 'Veces que ' + maestro + ' refirió a ' + estudiante, count: filtered.length, rows: filtered.map(v => ['Visita ' + formatDate(v.fecha), v.llegada || '—']) };
+    } else if (maestro) {
+      const byEst = {};
+      filtered.forEach(v => { const e = v.estudiante || '(sin nombre)'; byEst[e] = (byEst[e]||0)+1; });
+      result = { type: 'breakdown', title: 'Estudiantes referidos por ' + maestro, count: filtered.length, rows: Object.entries(byEst).sort((a,b)=>b[1]-a[1]) };
+    } else if (estudiante) {
+      const byMaestro = {};
+      filtered.forEach(v => { const m = (v.maestroNombre||'').trim() || '(maestro sin nombre)'; byMaestro[m] = (byMaestro[m]||0)+1; });
+      result = { type: 'breakdown', title: 'Maestros que refirieron a ' + estudiante, count: filtered.length, rows: Object.entries(byMaestro).sort((a,b)=>b[1]-a[1]) };
+    } else {
+      const matrix = {};
+      filtered.forEach(v => {
+        const m = (v.maestroNombre||'').trim() || '(maestro sin nombre)';
+        const e = v.estudiante || '(sin nombre)';
+        const key = m + ' → ' + e;
+        matrix[key] = (matrix[key]||0)+1;
+      });
+      result = { type: 'breakdown', title: 'Todas las referencias por maestro → estudiante', count: filtered.length, rows: Object.entries(matrix).sort((a,b)=>b[1]-a[1]) };
+    }
+    lastQuery = { maestro: maestro, estudiante: estudiante, result: result };
+    renderQueryResult(result);
+  }
+  function renderQueryResult(r) {
+    let html = '<div class="query-result">';
+    if (r.type === 'specific') {
+      html += '<div class="big-num">' + r.count + '</div><div class="desc">' + escapeHtml(r.title) + '</div>';
+      if (r.rows.length) {
+        html += '<table class="query-table"><thead><tr><th>Fecha</th><th>Hora</th></tr></thead><tbody>';
+        r.rows.forEach(row => { html += '<tr><td>' + escapeHtml(row[0]) + '</td><td>' + escapeHtml(row[1]) + '</td></tr>'; });
+        html += '</tbody></table>';
+      }
+    } else {
+      html += '<div class="desc"><strong>' + escapeHtml(r.title) + '</strong> — total: ' + r.count + ' referencias</div>';
+      if (r.rows.length) {
+        html += '<table class="query-table"><thead><tr><th>Detalle</th><th class="count">N</th></tr></thead><tbody>';
+        r.rows.forEach(row => { html += '<tr><td>' + escapeHtml(row[0]) + '</td><td class="count">' + row[1] + '</td></tr>'; });
+        html += '</tbody></table>';
+      } else {
+        html += '<div class="empty-summary">Sin resultados con este filtro.</div>';
+      }
+    }
+    html += '</div>';
+    $('#query-result').innerHTML = html;
+  }
+
+  function switchTab(name) {
+    activeTab = name;
+    $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    $('#tab-visitas').style.display = (name === 'visitas') ? '' : 'none';
+    $('#tab-resumen').classList.toggle('active', name === 'resumen');
+    if (name === 'resumen') renderSummary();
+  }
+
+  function setMark(id, on) { const el = document.getElementById(id); if (el) el.classList.toggle('on', !!on); }
+  function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val || ''; }
+  function buildAccidenteBlock(arr) {
+    const items = [['asfixia','asfixia'],['ahogamiento','ahogamiento'],['amputación','amputación'],['caída','caída'],['cortadura','cortadura'],['envenenamiento','envenenamiento'],['herida','herida'],['intoxicación','intoxicación'],['laceraciones','laceraciones'],['moretones','moretones'],['perdida de diente','perdida de diente'],['posible factura','posible factura'],['sangrado nasal','sangrado nasal'],['quemadura','quemadura']];
+    const rows = [items.slice(0,4), items.slice(4,8), items.slice(8,11), items.slice(11,14)];
+    return rows.map(r => r.map(([v,label]) => '<span class="opt"><span class="mark ' + (arr.includes(v)?'on':'') + '"></span> ' + label + '</span>').join(' ')).join('<br>');
+  }
+  function buildSintomasBlock(d) {
+    const arr = d.sintomas || [];
+    const groups = [
+      [['alergia a','alergia a <span class="underline-text" style="min-width:160px;">'+escapeHtml(d.alergiaA||'')+'</span>'], ['calambre','calambre']],
+      [['dolor abdominal','dolor abdominal'],['dolor de cabeza','dolor de cabeza'],['dolor de garganta','dolor de garganta']],
+      [['dolor de oído','dolor de oído'],['erupcón en la piel','erupcón en la piel'],['fatiga','fatiga'],['fiebre','fiebre']],
+      [['mareo','mareo'],['nausea','nausea'],['picadura de insecto','picadura de insecto']],
+      [['piel enrojecida','piel enrojecida'],['sofocación','sofocación'],['tos','tos'],['vómito','vómito']]
+    ];
+    let html = groups.map(g => g.map(([v,label]) => '<span class="opt"><span class="mark ' + (arr.includes(v)?'on':'') + '"></span> ' + label + '</span>').join(' ')).join('<br>');
+    html += '<br><span class="opt"><span class="mark ' + (arr.includes('otro')?'on':'') + '"></span> Otro (explique)</span> <span class="underline-text" style="min-width:200px;">'+escapeHtml(d.sinOtroText||'')+'</span>';
+    return html;
+  }
+  function populateFormPrint() {
+    const d = currentId ? visits.find(v => v.id === currentId) : getFormData(); if (!d) return;
+    setText('p-escuela', d.escuela); setText('p-codigo', d.codigo); setText('p-enfermero', d.enfermero);
+    setText('p-estudiante', d.estudiante); setText('p-numero', d.numero); setText('p-grado', d.grado);
+    setText('p-fecha', formatDate(d.fecha)); setText('p-llegada', d.llegada); setText('p-salida', d.salida);
+    setMark('p-ref-maestro', d.refiere === 'maestro');
+    setMark('p-ref-auto', d.refiere === 'auto');
+    setMark('p-ref-otro', d.refiere === 'otro');
+    let detail = '';
+    if (d.refiere === 'maestro' && d.maestroNombre) detail = d.maestroNombre;
+    else if (d.refiere === 'otro' && d.refiereOtro) detail = d.refiereOtro;
+    setText('p-ref-detail-text', detail);
+    const seg = d.seguimiento || [];
+    ['Asma','Alergias','Diabetes','Epilepsia','Otro'].forEach(k => setMark('p-seg-'+k, seg.includes(k)));
+    setText('p-seg-otro-text', d.segOtroText);
+    document.getElementById('p-accidente-block').innerHTML = buildAccidenteBlock(d.accidente || []);
+    document.getElementById('p-sintomas-block').innerHTML = buildSintomasBlock(d);
+    const accion = d.accion || [];
+    setMark('p-acc-regreso', accion.includes('regreso a clase'));
+    setMark('p-acc-emergencia', accion.includes('se envió a sala de emergencia'));
+    setMark('p-acc-padre', accion.includes('madre, padre o encargado se llevó al estudiante'));
+  }
+  function buildTallyTable(items, counts, total) {
+    const max = Math.max.apply(null, [1].concat(items.map(label => counts[label] || 0)));
+    let rows = items.map(label => {
+      const c = counts[label] || 0;
+      const pct = total ? Math.round((c / total) * 100) : 0;
+      const barW = max ? (c / max) * 100 : 0;
+      return '<tr><td>' + escapeHtml(capitalize(label)) + '</td><td class="count">' + c + '</td><td class="count">' + pct + '%</td><td class="bar-cell"><div class="pbar"><div style="width:' + barW + '%"></div></div></td></tr>';
+    }).join('');
+    return '<thead><tr><th>Categoría</th><th class="count">N</th><th class="count">% del total</th><th>Distribución</th></tr></thead><tbody>' + rows + '</tbody>';
+  }
+  function populateSummaryPrint() {
+    const total = visits.length;
+    setText('ps-total', total);
+    setText('ps-date', new Date().toLocaleDateString('es-ES'));
+    document.getElementById('ps-refiere').innerHTML = buildTallyTable(['Maestro','Auto referido','Otro','Sin especificar'], countRefiere(), total);
+    document.getElementById('ps-seguimiento').innerHTML = buildTallyTable(['Asma','Alergias','Diabetes','Epilepsia','Otro'], countCategory('seguimiento'), total);
+    document.getElementById('ps-accidente').innerHTML = buildTallyTable(['asfixia','ahogamiento','amputación','caída','cortadura','envenenamiento','herida','intoxicación','laceraciones','moretones','perdida de diente','posible factura','sangrado nasal','quemadura'], countCategory('accidente'), total);
+    document.getElementById('ps-sintomas').innerHTML = buildTallyTable(['alergia a','calambre','dolor abdominal','dolor de cabeza','dolor de garganta','dolor de oído','erupcón en la piel','fatiga','fiebre','mareo','nausea','picadura de insecto','piel enrojecida','sofocación','tos','vómito','otro'], countCategory('sintomas'), total);
+    document.getElementById('ps-accion').innerHTML = buildTallyTable(['regreso a clase','se envió a sala de emergencia','madre, padre o encargado se llevó al estudiante'], countCategory('accion'), total);
+  }
+  function populateQueryPrint() {
+    if (!lastQuery) runQuery();
+    const r = lastQuery.result;
+    let filterDesc = [];
+    if (lastQuery.maestro) filterDesc.push('Maestro: ' + lastQuery.maestro);
+    if (lastQuery.estudiante) filterDesc.push('Estudiante: ' + lastQuery.estudiante);
+    if (!filterDesc.length) filterDesc.push('Todos los maestros y estudiantes');
+    setText('pq-filter', filterDesc.join(' · '));
+    setText('pq-date', new Date().toLocaleDateString('es-ES'));
+    setText('pq-title', r.title + ' (Total: ' + r.count + ')');
+    const tbl = document.getElementById('pq-table');
+    if (r.type === 'specific') {
+      let rows = r.rows.map(row => '<tr><td>' + escapeHtml(row[0]) + '</td><td>' + escapeHtml(row[1]) + '</td></tr>').join('');
+      tbl.innerHTML = '<thead><tr><th>Fecha</th><th>Hora</th></tr></thead><tbody>' + (rows || '<tr><td colspan="2" style="text-align:center; font-style:italic;">Sin resultados</td></tr>') + '</tbody>';
+    } else {
+      let rows = r.rows.map(row => '<tr><td>' + escapeHtml(row[0]) + '</td><td class="count">' + row[1] + '</td></tr>').join('');
+      tbl.innerHTML = '<thead><tr><th>Detalle</th><th class="count">N</th></tr></thead><tbody>' + (rows || '<tr><td colspan="2" style="text-align:center; font-style:italic;">Sin resultados</td></tr>') + '</tbody>';
+    }
+  }
+  function clearPrintViews() {
+    document.getElementById('print-form-view').classList.remove('active');
+    document.getElementById('print-summary-view').classList.remove('active');
+    document.getElementById('print-query-view').classList.remove('active');
+  }
+  function handlePrint() {
+    clearPrintViews();
+    if (activeTab === 'resumen') {
+      if (!visits.length) { alert('No hay visitas registradas para generar el resumen.'); return; }
+      populateSummaryPrint();
+      document.getElementById('print-summary-view').classList.add('active');
+    } else {
+      populateFormPrint();
+      document.getElementById('print-form-view').classList.add('active');
+    }
+    setTimeout(() => window.print(), 80);
+  }
+  function handlePrintQuery() {
+    if (!visits.length) { alert('No hay visitas registradas.'); return; }
+    runQuery();
+    populateQueryPrint();
+    clearPrintViews();
+    document.getElementById('print-query-view').classList.add('active');
+    setTimeout(() => window.print(), 80);
+  }
+
+  $('#btn-new').addEventListener('click', () => { newVisit(); switchTab('visitas'); });
+  $('#btn-clear').addEventListener('click', () => { if (confirm('¿Limpiar formulario?')) clearForm(); });
+  $('#btn-save').addEventListener('click', saveVisit);
+  $('#btn-delete').addEventListener('click', deleteVisit);
+  $('#btn-print').addEventListener('click', handlePrint);
+  $('#btn-consultar').addEventListener('click', runQuery);
+  $('#btn-print-query').addEventListener('click', handlePrintQuery);
+  $('#cal-prev').addEventListener('click', () => { calCursor.setMonth(calCursor.getMonth() - 1); renderCalendar(); });
+  $('#cal-next').addEventListener('click', () => { calCursor.setMonth(calCursor.getMonth() + 1); renderCalendar(); });
+  $$('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+  renderCalendar(); renderList(); renderSummary(); newVisit();
+})();
+</script>
+</body>
+</html>
