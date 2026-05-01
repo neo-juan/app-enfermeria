@@ -1,0 +1,1180 @@
+<!DOCTYPE html><script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Enfermeria Alc Registro",
+  "schemaVersion": 1,
+  "description": "Formulario de captura para registrar visitas de estudiantes en la enfermería de la Escuela Intermedia Antonio Ledée Colón. Cada registro se guarda como página nueva en la base de datos de Notion \"Registros de Enfermería ALC\".",
+  "mcpTools": [
+    "mcp__f8ba6f5a-dd18-4653-b831-e97b9295804e__notion-create-pages",
+    "mcp__f8ba6f5a-dd18-4653-b831-e97b9295804e__notion-search"
+  ],
+  "mcpServerNames": [
+    "Notion",
+    "Notion"
+  ]
+}
+</script>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enfermería ALC — Registro Diario</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b3a 50%, #2d1b1b 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #e2e8f0;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  .header {
+    background: linear-gradient(135deg, #1e293b 0%, #2d1b1b 100%);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    margin-bottom: 20px;
+    border: 1px solid rgba(184, 134, 11, 0.2);
+    border-left: 6px solid #b8860b;
+  }
+  .header h1 { color: #f59e0b; font-size: 28px; margin: 0; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+    background: rgba(16,185,129,0.15); color: #6ee7b7;
+    border: 1px solid rgba(110,231,183,0.3);
+    margin-top: 8px;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; }
+  .header-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .header-info label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;
+    letter-spacing: 0.5px;
+  }
+  .header-info input {
+    width: 100%; padding: 10px 12px;
+    border: 2px solid #334155; border-radius: 8px;
+    font-size: 14px; background: #0f172a; color: #e2e8f0;
+  }
+  .header-info input:focus { outline: none; border-color: #f59e0b; }
+
+  .tabs {
+    display: flex; gap: 8px; margin-bottom: 16px;
+    background: #1e293b; padding: 6px; border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    overflow-x: auto;
+    border: 1px solid rgba(184, 134, 11, 0.15);
+  }
+  .tab {
+    padding: 10px 20px; border: none; background: transparent;
+    border-radius: 8px; cursor: pointer; font-weight: 600;
+    font-size: 14px; color: #94a3b8;
+    white-space: nowrap; font-family: inherit;
+  }
+  .tab:hover { background: #334155; color: #e2e8f0; }
+  .tab.active {
+    background: linear-gradient(135deg, #6b2020, #8b3030);
+    color: #f59e0b;
+    box-shadow: 0 2px 8px rgba(107,32,32,0.5);
+  }
+
+  .card {
+    background: #1e293b; border-radius: 16px; padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-bottom: 20px;
+    border: 1px solid rgba(184, 134, 11, 0.15);
+  }
+  .card h2 { color: #f59e0b; font-size: 18px; margin-bottom: 16px; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+  }
+  .form-field { display: flex; flex-direction: column; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-field label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: #cbd5e1; margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .form-field label .req { color: #f87171; margin-left: 2px; }
+  .form-field input, .form-field select, .form-field textarea {
+    width: 100%; padding: 10px 12px;
+    border: 2px solid #334155; border-radius: 8px;
+    font-size: 14px; font-family: inherit;
+    background: #0f172a; color: #e2e8f0;
+  }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+    outline: none; border-color: #f59e0b;
+  }
+  .form-field textarea { resize: vertical; min-height: 60px; }
+  .form-field select option { background: #0f172a; color: #e2e8f0; }
+
+  .razon-field label { color: #fbbf24; font-weight: 700; }
+  .razon-field textarea {
+    border-color: #b8860b;
+    background: rgba(245,158,11,0.05);
+  }
+  .razon-field textarea:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.2); }
+
+  .pcs-box {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px;
+    border: 2px solid #b8860b; border-radius: 8px;
+    background: rgba(245, 158, 11, 0.1);
+    cursor: pointer;
+    width: 100%; margin-top: 18px;
+  }
+  .pcs-box:hover { background: rgba(245, 158, 11, 0.2); box-shadow: 0 2px 8px rgba(184,134,11,0.3); }
+  .pcs-box input { width: 22px; height: 22px; cursor: pointer; accent-color: #f59e0b; margin: 0; }
+  .pcs-label { font-weight: 700; font-size: 16px; color: #f59e0b; letter-spacing: 1px; }
+
+  .button-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .btn {
+    padding: 10px 20px; border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: inherit; transition: all 0.15s;
+    text-decoration: none;
+  }
+  .btn-sm { padding: 6px 10px; font-size: 12px; }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .btn-primary { background: linear-gradient(135deg, #6b2020, #8b3030); color: #f59e0b; }
+  .btn-primary:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(107,32,32,0.4); }
+  .btn-success { background: #059669; color: white; }
+  .btn-success:hover:not(:disabled) { background: #047857; }
+  .btn-warning { background: #d97706; color: white; }
+  .btn-warning:hover:not(:disabled) { background: #b45309; }
+  .btn-danger { background: #dc2626; color: white; }
+  .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+  .btn-secondary { background: #475569; color: #e2e8f0; }
+  .btn-secondary:hover:not(:disabled) { background: #334155; }
+  .btn-gold { background: linear-gradient(135deg, #b8860b, #d97706); color: white; }
+  .btn-gold:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(184,134,11,0.4); }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #059669; color: white;
+    padding: 12px 20px; border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s; z-index: 1000;
+    max-width: 400px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { background: #dc2626; }
+  .toast.warning { background: #d97706; }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px; margin-bottom: 16px;
+  }
+  .stat-card {
+    background: linear-gradient(135deg, #6b2020, #b8860b);
+    color: #f8fafc; padding: 16px; border-radius: 12px;
+    text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .stat-card .value { font-size: 28px; font-weight: 700; }
+  .stat-card .label { font-size: 12px; text-transform: uppercase; opacity: 0.9; }
+
+  .table-container { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tabla-oficial { border: 2px solid #b8860b; background: #0f172a; }
+  .tabla-oficial th {
+    text-align: center; font-size: 13px;
+    border: 1px solid #b8860b; padding: 10px 6px;
+    background: linear-gradient(135deg, #6b2020, #8b3030);
+    color: #f59e0b; font-weight: 700;
+  }
+  .tabla-oficial td {
+    border: 1px solid #334155; padding: 12px 8px;
+    vertical-align: middle; font-size: 13px; color: #e2e8f0;
+  }
+  .tabla-oficial tbody tr:hover { background: rgba(245,158,11,0.05); }
+  .pcs-badge {
+    display: inline-block; padding: 3px 10px;
+    background: linear-gradient(135deg, #b8860b, #f59e0b);
+    color: #0f172a; border-radius: 4px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  }
+  .empty-state { text-align: center; padding: 40px 20px; color: #64748b; }
+  .estudiante-cell strong { display: block; }
+  .estudiante-cell a {
+    font-size: 11px; color: #f59e0b; text-decoration: none; font-weight: 600;
+  }
+  .estudiante-cell a:hover { text-decoration: underline; }
+
+  .search-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .search-bar input, .search-bar select {
+    padding: 10px 12px; border: 2px solid #334155;
+    border-radius: 8px; font-size: 14px;
+    flex: 1; min-width: 150px;
+    background: #0f172a; color: #e2e8f0;
+  }
+  .search-bar input:focus, .search-bar select:focus {
+    outline: none; border-color: #f59e0b;
+  }
+
+  .info-line {
+    background: rgba(59,130,246,0.1);
+    border-left: 4px solid #3b82f6;
+    padding: 12px 16px; border-radius: 8px;
+    margin-bottom: 14px; font-size: 13px; color: #bfdbfe;
+  }
+  .danger-zone {
+    margin-top: 22px; padding-top: 18px;
+    border-top: 1px solid #334155;
+  }
+  .danger-zone h3 { color: #f87171; font-size: 14px; margin-bottom: 10px; }
+
+  .spinner {
+    display: inline-block; width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Encabezado de impresión - oculto en pantalla */
+  .print-only-header { display: none; }
+
+  @media print {
+    @page {
+      size: landscape;
+      margin: 0.6cm;
+    }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html, body {
+      background: white !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      color: black !important;
+      font-size: 10px !important;
+      font-family: Arial, sans-serif !important;
+    }
+    .no-print, .tabs, .toast, .header, .stats, .search-bar, .button-group, .danger-zone, .info-line {
+      display: none !important;
+    }
+    .container {
+      max-width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .card {
+      box-shadow: none !important;
+      border: none !important;
+      background: white !important;
+      color: black !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .card h2 { display: none !important; }
+
+    /* Solo mostrar la tab activa al imprimir */
+    .tab-content { display: none !important; }
+    .tab-content.print-active { display: block !important; }
+
+    /* Encabezado oficial de impresión */
+    .print-only-header {
+      display: block !important;
+      margin-bottom: 12px;
+    }
+    .print-header-row {
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .print-logo-left, .print-logo-right { flex: 0 0 auto; }
+    .print-header-center { flex: 1; text-align: center; }
+    .print-header-center p {
+      margin: 1px 0 !important;
+      font-size: 11px !important;
+      color: #000 !important;
+      line-height: 1.3 !important;
+    }
+    .print-header-center .print-titulo {
+      font-size: 12px !important;
+      margin-top: 6px !important;
+    }
+    .print-info-row {
+      display: flex !important;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 4px 10px 8px 10px;
+      font-size: 11px !important;
+      color: #000 !important;
+    }
+    .print-info-row span { flex: 1; }
+    .print-info-row u {
+      display: inline-block;
+      min-width: 130px;
+      border-bottom: 1px solid #000;
+      text-decoration: none;
+      padding: 0 4px;
+    }
+
+    /* Tabla protagonista - igual al PDF oficial */
+    .table-container { overflow: visible !important; }
+    .tabla-oficial {
+      border: 1.5px solid #000 !important;
+      width: 100% !important;
+      page-break-inside: auto;
+      background: white !important;
+      border-collapse: collapse !important;
+    }
+    .tabla-oficial th {
+      background: white !important;
+      color: #000 !important;
+      border: 1px solid #000 !important;
+      padding: 6px 4px !important;
+      font-size: 10px !important;
+      font-weight: bold !important;
+      text-align: center !important;
+      vertical-align: middle !important;
+    }
+    .tabla-oficial td {
+      color: #000 !important;
+      background: white !important;
+      border: 1px solid #000 !important;
+      padding: 8px 4px !important;
+      font-size: 10px !important;
+      vertical-align: middle !important;
+    }
+    .tabla-oficial tbody tr {
+      page-break-inside: avoid;
+      background: white !important;
+      min-height: 35px;
+    }
+    .tabla-oficial .estudiante-cell a { display: none !important; }
+    .pcs-badge {
+      background: #000 !important;
+      color: white !important;
+      font-size: 9px !important;
+      padding: 1px 4px !important;
+      border-radius: 2px !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .form-grid { grid-template-columns: 1fr; }
+    table { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+      <svg viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" width="80" height="93">
+        <path d="M60 4 L110 18 L110 75 Q110 110 60 134 Q10 110 10 75 L10 18 Z" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/>
+        <path d="M60 10 L104 22 L104 75 Q104 106 60 127 Q16 106 16 75 L16 22 Z" fill="#6b2020" stroke="#4a1515" stroke-width="1"/>
+        <g transform="translate(60, 32)">
+          <circle cx="0" cy="0" r="9" fill="#f59e0b"/>
+          <g fill="#f59e0b">
+            <rect x="-1.5" y="-13" width="3" height="4"/>
+            <rect x="-1.5" y="9" width="3" height="4"/>
+            <rect x="-13" y="-1.5" width="4" height="3"/>
+            <rect x="9" y="-1.5" width="4" height="3"/>
+          </g>
+          <circle cx="0" cy="0" r="5" fill="#6b2020"/>
+          <path d="M-4 2 Q-4 -3 0 -3 Q4 -3 4 2 L3 6 L-3 6 Z" fill="white"/>
+          <rect x="-2.5" y="6" width="5" height="2" fill="white"/>
+          <rect x="-2" y="8" width="4" height="1.5" fill="white"/>
+        </g>
+        <text x="60" y="72" text-anchor="middle" fill="white" font-family="Georgia, serif" font-size="22" font-weight="bold">EALC</text>
+        <line x1="25" y1="82" x2="95" y2="82" stroke="white" stroke-width="0.8"/>
+        <text x="60" y="93" text-anchor="middle" fill="white" font-family="Arial" font-size="5.5" font-weight="bold">ESCUELA INTERMEDIA</text>
+        <text x="60" y="101" text-anchor="middle" fill="white" font-family="Arial" font-size="5.5" font-weight="bold">ANTONIO LEDÉE COLÓN</text>
+        <text x="60" y="109" text-anchor="middle" fill="white" font-family="Arial" font-size="5.5" font-weight="bold">SALINAS, PR</text>
+      </svg>
+      <div style="flex: 1; min-width: 200px;">
+        <h1>Enfermería ALC</h1>
+        <p style="color: #94a3b8; font-size: 14px; margin-top: 6px;">Programa de Enfermería Escolar · Lista Diaria de Estudiantes Atendidos</p>
+        <span class="badge"><span class="badge-dot"></span> Conectado a Notion · Guardado en vivo</span>
+      </div>
+    </div>
+    <div class="header-info">
+      <div>
+        <label>Escuela</label>
+        <input type="text" id="escuela" value="Antonio Ledée Colón" />
+      </div>
+      <div>
+        <label>Municipio</label>
+        <input type="text" id="municipio" value="Salinas" />
+      </div>
+      <div>
+        <label>Fecha del registro</label>
+        <input type="date" id="fecha" />
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs no-print">
+    <button class="tab active" data-tab="registro">➕ Nuevo Registro</button>
+    <button class="tab" data-tab="hoy">📋 Registros de Hoy</button>
+    <button class="tab" data-tab="historial">📚 Historial</button>
+    <button class="tab" data-tab="exportar">📤 Exportar</button>
+  </div>
+
+  <!-- TAB: NUEVO REGISTRO -->
+  <div id="tab-registro" class="tab-content">
+    <div class="card">
+      <h2>➕ Registrar visita de estudiante</h2>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Hora de llegada</label>
+          <input type="time" id="horaLlegada" />
+        </div>
+        <div class="form-field">
+          <label>Nombre del estudiante <span class="req">*</span></label>
+          <input type="text" id="nombre" placeholder="Ej. Valentina Rivera" />
+        </div>
+        <div class="form-field">
+          <label>Grado y grupo</label>
+          <select id="grado">
+            <option value="">Seleccionar…</option>
+            <option>6-1</option><option>6-2</option><option>6-3</option>
+            <option>7-1</option><option>7-2</option><option>7-3</option>
+            <option>8-1</option><option>8-2</option><option>8-3</option>
+            <option>SEP-6</option><option>SEP-7</option><option>SEM</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Tipo de servicio</label>
+          <select id="tipoServicio">
+            <option value="">Seleccionar…</option>
+            <option>Cernimiento</option>
+            <option>Primeros Auxilios</option>
+            <option>Medicamento</option>
+            <option>Consulta</option>
+            <option>Emergencia</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Quien refiere</label>
+          <input type="text" id="quienRefiere" placeholder="Ej. Sra. Malavé" />
+        </div>
+        <div class="form-field full razon-field">
+          <label>🩺 Razón / Queja principal</label>
+          <textarea id="razon" placeholder="Ej. Dolor de cabeza, dolor abdominal, caída en la cancha…"></textarea>
+        </div>
+        <div class="form-field full">
+          <label>Acción realizada</label>
+          <textarea id="accion" placeholder="Ej. Se colocó hielo. Se envía a casa."></textarea>
+        </div>
+        <div class="form-field">
+          <label>Excusa a maestros</label>
+          <select id="excusa">
+            <option>No</option>
+            <option>Sí</option>
+            <option>Sí - salón hogar</option>
+            <option>Se envió a casa</option>
+            <option>Sí - whatsapp</option>
+            <option>Sí - excusa a maestro actual</option>
+            <option>Maestros de clases que faltan</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Hora de salida</label>
+          <input type="time" id="horaSalida" />
+        </div>
+        <div class="form-field" style="display: flex; align-items: center;">
+          <label class="pcs-box">
+            <input type="checkbox" id="pcs" />
+            <span class="pcs-label">PCS</span>
+          </label>
+        </div>
+      </div>
+      <div class="button-group">
+        <button class="btn btn-primary" id="btnGuardar">
+          <span id="btnGuardarText">💾 Guardar en Notion</span>
+        </button>
+        <button class="btn btn-secondary" id="btnLimpiar">🔄 Limpiar</button>
+        <button class="btn btn-success" id="btnHoraLlegada">🕐 Hora actual (llegada)</button>
+        <button class="btn btn-success" id="btnHoraSalida">🕐 Hora actual (salida)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: HOY -->
+  <div id="tab-hoy" class="tab-content" style="display:none;">
+    <div class="print-only-header" id="printHeader">
+      <div class="print-header-row">
+        <div class="print-logo-left">
+          <svg viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" width="70" height="82">
+            <path d="M60 4 L110 18 L110 75 Q110 110 60 134 Q10 110 10 75 L10 18 Z" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/>
+            <path d="M60 10 L104 22 L104 75 Q104 106 60 127 Q16 106 16 75 L16 22 Z" fill="#6b2020" stroke="#4a1515" stroke-width="1"/>
+            <g transform="translate(60, 32)">
+              <circle cx="0" cy="0" r="9" fill="#f59e0b"/>
+              <g fill="#f59e0b">
+                <rect x="-1.5" y="-13" width="3" height="4"/>
+                <rect x="-1.5" y="9" width="3" height="4"/>
+                <rect x="-13" y="-1.5" width="4" height="3"/>
+                <rect x="9" y="-1.5" width="4" height="3"/>
+              </g>
+              <circle cx="0" cy="0" r="5" fill="#6b2020"/>
+              <path d="M-4 2 Q-4 -3 0 -3 Q4 -3 4 2 L3 6 L-3 6 Z" fill="white"/>
+              <rect x="-2.5" y="6" width="5" height="2" fill="white"/>
+              <rect x="-2" y="8" width="4" height="1.5" fill="white"/>
+            </g>
+            <text x="60" y="72" text-anchor="middle" fill="white" font-family="Georgia, serif" font-size="22" font-weight="bold">EALC</text>
+            <line x1="25" y1="82" x2="95" y2="82" stroke="white" stroke-width="0.8"/>
+            <text x="60" y="93" text-anchor="middle" fill="white" font-family="Arial" font-size="5.5" font-weight="bold">ESCUELA INTERMEDIA</text>
+            <text x="60" y="101" text-anchor="middle" fill="white" font-family="Arial" font-size="5.5" font-weight="bold">ANTONIO LEDÉE COLÓN</text>
+            <text x="60" y="109" text-anchor="middle" fill="white" font-family="Arial" font-size="5.5" font-weight="bold">SALINAS, PR</text>
+          </svg>
+        </div>
+        <div class="print-header-center">
+          <p>Departamento de Educación</p>
+          <p>Escuela Intermedia Sabana Llana</p>
+          <p>Programa de Enfermería Escolar</p>
+          <p>Salinas, Puerto Rico</p>
+          <p class="print-titulo"><strong>LISTA DIARIA DE ESTUDIANTES ATENDIDOS</strong></p>
+          <p class="print-titulo"><strong>EN ENFERMERÍA</strong></p>
+        </div>
+        <div class="print-logo-right">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="65" height="65">
+            <path d="M50 88 C20 65, 5 45, 15 25 C20 15, 35 12, 50 25 C65 12, 80 15, 85 25 C95 45, 80 65, 50 88 Z"
+                  fill="#b91c1c"/>
+            <g transform="translate(50, 45)">
+              <ellipse cx="0" cy="-18" rx="3" ry="6" fill="#fbbf24"/>
+              <ellipse cx="0" cy="-19" rx="2" ry="4" fill="#fef3c7"/>
+              <path d="M-8 -10 L-10 0 L-8 8 L8 8 L10 0 L8 -10 Z" fill="#fde68a" stroke="#92400e" stroke-width="0.5"/>
+              <rect x="-7" y="8" width="14" height="3" fill="#92400e"/>
+              <path d="M-8 -5 Q-15 -2 -12 5" stroke="#fde68a" stroke-width="2" fill="none"/>
+            </g>
+            <text x="50" y="68" text-anchor="middle" fill="white" font-family="Arial" font-size="6" font-weight="bold">PROGRAMA DE</text>
+            <text x="50" y="76" text-anchor="middle" fill="white" font-family="Arial" font-size="7" font-weight="bold">ENFERMERÍA</text>
+            <text x="50" y="83" text-anchor="middle" fill="white" font-family="Arial" font-size="5" font-weight="bold">ESCOLAR</text>
+          </svg>
+        </div>
+      </div>
+      <div class="print-info-row">
+        <span><strong>Nombre de la Escuela:</strong> <u id="printEscuela"></u></span>
+        <span><strong>Municipio:</strong> <u id="printMunicipio"></u></span>
+        <span><strong>Fecha:</strong> <u id="printFecha"></u></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="no-print">📋 Registros del día <span id="fechaHoyLabel" style="color:#94a3b8; font-weight:400; font-size:14px;"></span></h2>
+      <div class="stats no-print" id="statsHoy"></div>
+      <div class="table-container">
+        <table id="tablaHoy" class="tabla-oficial">
+          <thead>
+            <tr>
+              <th>Hora de<br>Llegada</th>
+              <th>Nombre del estudiante</th>
+              <th>Grado y<br>grupo</th>
+              <th>Tipo de<br>servicio</th>
+              <th>Razón / Queja<br>principal</th>
+              <th>Quien refiere</th>
+              <th>Acción realizada/<br>Llamada realizada</th>
+              <th>Excusa a<br>maestros</th>
+              <th>Hora de<br>Salida</th>
+              <th>PCS</th>
+              <th class="no-print">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyHoy"></tbody>
+        </table>
+      </div>
+      <div class="button-group no-print">
+        <button class="btn btn-warning" id="btnImprimirHoy">🖨️ Imprimir hoja oficial</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: HISTORIAL -->
+  <div id="tab-historial" class="tab-content" style="display:none;">
+    <div class="card">
+      <h2>📚 Historial completo</h2>
+      <div class="info-line">
+        Se muestran los registros guardados desde este artefacto. Para búsqueda completa en Notion, usa el botón de abajo.
+      </div>
+      <div class="search-bar">
+        <input type="text" id="searchNombre" placeholder="🔍 Buscar por nombre…" />
+        <input type="date" id="searchFecha" />
+        <select id="searchServicio">
+          <option value="">Todos los servicios</option>
+          <option>Cernimiento</option>
+          <option>Primeros Auxilios</option>
+          <option>Medicamento</option>
+          <option>Consulta</option>
+          <option>Emergencia</option>
+          <option>Otro</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" id="btnLimpiarFiltros">Limpiar filtros</button>
+      </div>
+      <div class="stats" id="statsHistorial"></div>
+      <div class="table-container">
+        <table id="tablaHistorial" class="tabla-oficial">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Llegada</th>
+              <th>Estudiante</th>
+              <th>Grado</th>
+              <th>Servicio</th>
+              <th>Razón / Queja</th>
+              <th>Refiere</th>
+              <th>Acción</th>
+              <th>Excusa</th>
+              <th>Salida</th>
+              <th>PCS</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyHistorial"></tbody>
+        </table>
+      </div>
+      <div class="button-group">
+        <button class="btn btn-gold" id="btnBuscarNotion">
+          <span id="btnBuscarNotionText">🔎 Buscar en Notion (incluye registros de otros dispositivos)</span>
+        </button>
+        <a class="btn btn-secondary" href="https://www.notion.so/cc05cddf16d346b0be99fc4dd9b80534" target="_blank" rel="noopener">📂 Abrir base de datos en Notion ↗</a>
+      </div>
+      <div id="resultadosNotion"></div>
+    </div>
+  </div>
+
+  <!-- TAB: EXPORTAR -->
+  <div id="tab-exportar" class="tab-content" style="display:none;">
+    <div class="card">
+      <h2>📤 Exportar registros</h2>
+      <p style="color:#94a3b8; margin-bottom: 16px;">Exporta los registros para Google Drive, imprimir o copiar al portapapeles.</p>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Desde</label>
+          <input type="date" id="expDesde" />
+        </div>
+        <div class="form-field">
+          <label>Hasta</label>
+          <input type="date" id="expHasta" />
+        </div>
+      </div>
+      <div class="button-group" style="margin-top: 20px;">
+        <button class="btn btn-success" id="btnExpCsv">📊 Exportar CSV</button>
+        <button class="btn btn-primary" id="btnExpTexto">📋 Copiar al portapapeles</button>
+        <button class="btn btn-warning" id="btnImprimir">🖨️ Imprimir hoja oficial</button>
+        <a class="btn btn-secondary" href="https://www.notion.so/cc05cddf16d346b0be99fc4dd9b80534" target="_blank" rel="noopener">📂 Abrir Notion para exportar todo ↗</a>
+      </div>
+      <div class="danger-zone">
+        <h3>⚠️ Zona de peligro</h3>
+        <p style="color:#94a3b8; font-size: 12px; margin-bottom: 8px;">
+          Esto solo borra el caché local del artefacto. Los registros en Notion no se tocan.
+        </p>
+        <button class="btn btn-danger btn-sm" id="btnBorrarTodo">🗑️ Borrar caché local</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  var DATA_SOURCE_ID = "e42a36f7-2a0f-4b48-b788-f53749588cd1";
+  var STORAGE_KEY = "enfermeriaAlcRegistros_v3";
+
+  var registros = [];
+
+  function $(id) { return document.getElementById(id); }
+  function escapar(t) {
+    if (t === null || t === undefined) return '';
+    var div = document.createElement('div');
+    div.textContent = String(t);
+    return div.innerHTML;
+  }
+
+  function guardarLocal() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(registros)); }
+    catch(e) { console.error('No se pudo guardar en localStorage', e); }
+  }
+  function cargarLocal() {
+    try {
+      var s = localStorage.getItem(STORAGE_KEY);
+      if (s) registros = JSON.parse(s) || [];
+    } catch(e) { registros = []; }
+  }
+
+  function toast(msg, tipo) {
+    var t = $('toast');
+    t.textContent = msg;
+    var cls = 'toast show';
+    if (tipo === 'error') cls += ' error';
+    if (tipo === 'warning') cls += ' warning';
+    t.className = cls;
+    setTimeout(function() { t.className = 'toast'; }, 4000);
+  }
+
+  function setHoraActual(id) {
+    var ahora = new Date();
+    var h = String(ahora.getHours()).padStart(2, '0');
+    var m = String(ahora.getMinutes()).padStart(2, '0');
+    $(id).value = h + ':' + m;
+  }
+
+  function formatearFecha(f) {
+    if (!f) return '';
+    var p = f.split('-');
+    if (p.length !== 3) return f;
+    var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    return parseInt(p[2]) + ' de ' + meses[parseInt(p[1])-1] + ' de ' + p[0];
+  }
+
+  function cambiarTab(tab) {
+    var allTabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < allTabs.length; i++) allTabs[i].classList.remove('active');
+    var tabBtn = document.querySelector('[data-tab="' + tab + '"]');
+    if (tabBtn) tabBtn.classList.add('active');
+    var contents = document.querySelectorAll('.tab-content');
+    for (var j = 0; j < contents.length; j++) contents[j].style.display = 'none';
+    var tabContent = $('tab-' + tab);
+    if (tabContent) tabContent.style.display = 'block';
+    if (tab === 'hoy') renderHoy();
+    if (tab === 'historial') renderHistorial();
+  }
+
+  // ===== CRUD =====
+  function setLoading(loading) {
+    $('btnGuardar').disabled = loading;
+    $('btnGuardarText').innerHTML = loading
+      ? '<span class="spinner"></span> Guardando…'
+      : '💾 Guardar en Notion';
+  }
+
+  async function guardarRegistro() {
+    var nombre = $('nombre').value.trim();
+    if (!nombre) { toast('El nombre del estudiante es obligatorio', 'error'); $('nombre').focus(); return; }
+    var fecha = $('fecha').value;
+    if (!fecha) { toast('Selecciona una fecha', 'error'); return; }
+
+    var registro = {
+      id: Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+      fecha: fecha,
+      horaLlegada: $('horaLlegada').value || '',
+      horaSalida: $('horaSalida').value || '',
+      nombre: nombre,
+      grado: $('grado').value || '',
+      tipoServicio: $('tipoServicio').value || '',
+      quienRefiere: $('quienRefiere').value || '',
+      razon: $('razon').value || '',
+      accion: $('accion').value || '',
+      excusa: $('excusa').value || 'No',
+      pcs: $('pcs').checked,
+      escuela: $('escuela').value || '',
+      municipio: $('municipio').value || '',
+      notionUrl: null,
+      registradoEn: new Date().toISOString()
+    };
+
+    var properties = {
+      "Estudiante": registro.nombre,
+      "date:Fecha:start": registro.fecha,
+      "Llegada": registro.horaLlegada,
+      "Hora Salida": registro.horaSalida,
+      "Quien Refiere": registro.quienRefiere,
+      "Razón/Queja principal": registro.razon,
+      "Acción Realizada": registro.accion,
+      "PCS": registro.pcs ? "__YES__" : "__NO__"
+    };
+    if (registro.grado) properties["Grado"] = registro.grado;
+    if (registro.tipoServicio) properties["Tipo de Servicio"] = registro.tipoServicio;
+    if (registro.excusa) properties["Excusa a Maestros"] = registro.excusa;
+
+    setLoading(true);
+    try {
+      var result = await window.cowork.callMcpTool(
+        'mcp__f8ba6f5a-dd18-4653-b831-e97b9295804e__notion-create-pages',
+        { parent: { type: "data_source_id", data_source_id: DATA_SOURCE_ID }, pages: [{ properties: properties }] }
+      );
+      try {
+        var parsed = typeof result === 'string' ? JSON.parse(result) : result;
+        var pages = (parsed && parsed.pages) ? parsed.pages : null;
+        if (!pages && parsed && parsed.content) {
+          var txt = '';
+          if (Array.isArray(parsed.content)) {
+            for (var i = 0; i < parsed.content.length; i++) {
+              if (parsed.content[i] && parsed.content[i].text) txt += parsed.content[i].text;
+            }
+          } else { txt = String(parsed.content); }
+          var inner = JSON.parse(txt);
+          pages = inner && inner.pages;
+        }
+        if (pages && pages[0]) registro.notionUrl = pages[0].url || null;
+      } catch(e) { /* tolerate */ }
+
+      registros.push(registro);
+      guardarLocal();
+      limpiarFormulario();
+      toast('✓ Guardado en Notion');
+      renderHoy();
+      renderHistorial();
+    } catch(err) {
+      console.error(err);
+      toast('Error al guardar: ' + (err && err.message ? err.message : 'desconocido'), 'error');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function limpiarFormulario() {
+    var ids = ['nombre','grado','tipoServicio','quienRefiere','razon','accion','horaSalida'];
+    for (var i = 0; i < ids.length; i++) $(ids[i]).value = '';
+    $('excusa').value = 'No';
+    $('pcs').checked = false;
+    setHoraActual('horaLlegada');
+    $('nombre').focus();
+  }
+
+  // ===== RENDER HOY =====
+  function renderHoy() {
+    var fecha = $('fecha').value;
+    $('fechaHoyLabel').textContent = fecha ? '— ' + formatearFecha(fecha) : '';
+    var delDia = registros.filter(function(r) { return r.fecha === fecha; });
+    delDia.sort(function(a,b) { return (a.horaLlegada||'').localeCompare(b.horaLlegada||''); });
+
+    var conExcusa = delDia.filter(function(r) { return r.excusa && r.excusa !== 'No'; }).length;
+    var conPCS = delDia.filter(function(r) { return r.pcs; }).length;
+    var presentes = delDia.filter(function(r) { return !r.horaSalida; }).length;
+
+    $('statsHoy').innerHTML =
+      '<div class="stat-card"><div class="value">' + delDia.length + '</div><div class="label">Atendidos</div></div>' +
+      '<div class="stat-card"><div class="value">' + conExcusa + '</div><div class="label">Con excusa</div></div>' +
+      '<div class="stat-card"><div class="value">' + conPCS + '</div><div class="label">Con PCS</div></div>' +
+      '<div class="stat-card"><div class="value">' + presentes + '</div><div class="label">Aún presentes</div></div>';
+
+    var tbody = $('tbodyHoy');
+    if (delDia.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="11" class="empty-state">No hay registros para esta fecha.</td></tr>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < delDia.length; i++) {
+      var r = delDia[i];
+      var nombreCell = '<div class="estudiante-cell"><strong>' + escapar(r.nombre) + '</strong>';
+      if (r.notionUrl) nombreCell += '<a href="' + escapar(r.notionUrl) + '" target="_blank" rel="noopener">Ver en Notion ↗</a>';
+      nombreCell += '</div>';
+      html += '<tr>' +
+        '<td>' + escapar(r.horaLlegada || '-') + '</td>' +
+        '<td>' + nombreCell + '</td>' +
+        '<td>' + escapar(r.grado || '-') + '</td>' +
+        '<td>' + escapar(r.tipoServicio || '-') + '</td>' +
+        '<td>' + escapar(r.razon || '-') + '</td>' +
+        '<td>' + escapar(r.quienRefiere || '-') + '</td>' +
+        '<td>' + escapar(r.accion || '-') + '</td>' +
+        '<td>' + escapar(r.excusa || 'No') + '</td>' +
+        '<td>' + (r.horaSalida ? escapar(r.horaSalida) : '<button class="btn btn-sm btn-success no-print" onclick="window.__marcarSalida(\'' + r.id + '\')">🕐 Salir</button>') + '</td>' +
+        '<td style="text-align:center;">' + (r.pcs ? '<span class="pcs-badge">✓ PCS</span>' : '-') + '</td>' +
+        '<td class="no-print"><button class="btn btn-sm btn-danger" onclick="window.__quitarLocal(\'' + r.id + '\')" title="Quitar del caché local (no borra de Notion)">×</button></td>' +
+        '</tr>';
+    }
+    tbody.innerHTML = html;
+  }
+
+  window.__marcarSalida = function(id) {
+    for (var i = 0; i < registros.length; i++) {
+      if (registros[i].id === id) {
+        var ahora = new Date();
+        registros[i].horaSalida = String(ahora.getHours()).padStart(2,'0') + ':' + String(ahora.getMinutes()).padStart(2,'0');
+        guardarLocal();
+        renderHoy();
+        renderHistorial();
+        toast('✓ Salida marcada localmente — actualízalo también en Notion si hace falta', 'warning');
+        return;
+      }
+    }
+  };
+
+  window.__quitarLocal = function(id) {
+    if (!confirm('¿Quitar este registro del caché local?\n\nEsto NO lo borra de Notion — solo lo quita de la vista local del artefacto.')) return;
+    registros = registros.filter(function(r) { return r.id !== id; });
+    guardarLocal();
+    renderHoy();
+    renderHistorial();
+    toast('Quitado del caché local');
+  };
+
+  // ===== RENDER HISTORIAL =====
+  function renderHistorial() {
+    var nombre = ($('searchNombre').value || '').toLowerCase();
+    var fecha = $('searchFecha').value;
+    var servicio = $('searchServicio').value;
+
+    var filtrados = registros.filter(function(r) {
+      if (nombre && (r.nombre || '').toLowerCase().indexOf(nombre) === -1) return false;
+      if (fecha && r.fecha !== fecha) return false;
+      if (servicio && r.tipoServicio !== servicio) return false;
+      return true;
+    });
+    filtrados.sort(function(a,b) {
+      var fa = (a.fecha || '') + (a.horaLlegada || '');
+      var fb = (b.fecha || '') + (b.horaLlegada || '');
+      return fb.localeCompare(fa);
+    });
+
+    var fechasUnicas = {};
+    var estudiantes = {};
+    for (var i = 0; i < filtrados.length; i++) {
+      fechasUnicas[filtrados[i].fecha] = true;
+      estudiantes[(filtrados[i].nombre || '').toLowerCase()] = true;
+    }
+    $('statsHistorial').innerHTML =
+      '<div class="stat-card"><div class="value">' + filtrados.length + '</div><div class="label">Registros</div></div>' +
+      '<div class="stat-card"><div class="value">' + Object.keys(estudiantes).length + '</div><div class="label">Estudiantes únicos</div></div>' +
+      '<div class="stat-card"><div class="value">' + Object.keys(fechasUnicas).length + '</div><div class="label">Días registrados</div></div>';
+
+    var tbody = $('tbodyHistorial');
+    if (filtrados.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="11" class="empty-state">No se encontraron registros con esos filtros.</td></tr>';
+      return;
+    }
+    var html = '';
+    for (var k = 0; k < filtrados.length; k++) {
+      var r = filtrados[k];
+      var nombreCell = '<div class="estudiante-cell"><strong>' + escapar(r.nombre) + '</strong>';
+      if (r.notionUrl) nombreCell += '<a href="' + escapar(r.notionUrl) + '" target="_blank" rel="noopener">Ver en Notion ↗</a>';
+      nombreCell += '</div>';
+      html += '<tr>' +
+        '<td>' + escapar(r.fecha || '-') + '</td>' +
+        '<td>' + escapar(r.horaLlegada || '-') + '</td>' +
+        '<td>' + nombreCell + '</td>' +
+        '<td>' + escapar(r.grado || '-') + '</td>' +
+        '<td>' + escapar(r.tipoServicio || '-') + '</td>' +
+        '<td>' + escapar(r.razon || '-') + '</td>' +
+        '<td>' + escapar(r.quienRefiere || '-') + '</td>' +
+        '<td>' + escapar(r.accion || '-') + '</td>' +
+        '<td>' + escapar(r.excusa || 'No') + '</td>' +
+        '<td>' + escapar(r.horaSalida || '-') + '</td>' +
+        '<td style="text-align:center;">' + (r.pcs ? '<span class="pcs-badge">✓ PCS</span>' : '-') + '</td>' +
+        '</tr>';
+    }
+    tbody.innerHTML = html;
+  }
+
+  function limpiarFiltros() {
+    $('searchNombre').value = '';
+    $('searchFecha').value = '';
+    $('searchServicio').value = '';
+    renderHistorial();
+    $('resultadosNotion').innerHTML = '';
+  }
+
+  // ===== BUSCAR EN NOTION =====
+  async function buscarEnNotion() {
+    var q = ($('searchNombre').value || '').trim();
+    if (!q) { toast('Escribe un nombre o palabra clave para buscar en Notion', 'warning'); return; }
+    $('btnBuscarNotion').disabled = true;
+    $('btnBuscarNotionText').innerHTML = '<span class="spinner"></span> Buscando en Notion…';
+    try {
+      var result = await window.cowork.callMcpTool(
+        'mcp__f8ba6f5a-dd18-4653-b831-e97b9295804e__notion-search',
+        {
+          query: q,
+          data_source_url: 'collection://' + DATA_SOURCE_ID,
+          filters: {},
+          page_size: 25
+        }
+      );
+      var data = typeof result === 'string' ? JSON.parse(result) : result;
+      if (data && data.content) {
+        var txt = '';
+        if (Array.isArray(data.content)) {
+          for (var i = 0; i < data.content.length; i++) {
+            if (data.content[i] && data.content[i].text) txt += data.content[i].text;
+          }
+        } else { txt = String(data.content); }
+        try { data = JSON.parse(txt); } catch(e) {}
+      }
+      var rs = (data && data.results) || [];
+      if (rs.length === 0) {
+        $('resultadosNotion').innerHTML = '<div class="info-line">Notion no devolvió resultados para "' + escapar(q) + '". Intenta con otra palabra clave.</div>';
+      } else {
+        var html = '<h3 style="margin-top:18px; color:#f59e0b; font-size:14px;">🔎 Resultados desde Notion (' + rs.length + ')</h3>';
+        html += '<div class="table-container" style="margin-top:8px;"><table class="tabla-oficial"><thead><tr><th>Estudiante</th><th>Modificado</th><th></th></tr></thead><tbody>';
+        for (var j = 0; j < rs.length; j++) {
+          var rr = rs[j];
+          var url = rr.url || '';
+          if (url && url.indexOf('http') !== 0) url = 'https://www.notion.so/' + url;
+          var ts = rr.timestamp ? new Date(rr.timestamp).toLocaleString('es-PR') : '';
+          html += '<tr>' +
+            '<td><strong>' + escapar(rr.title || '-') + '</strong></td>' +
+            '<td style="color:#94a3b8; font-size:12px;">' + escapar(ts) + '</td>' +
+            '<td><a class="btn btn-sm btn-secondary" href="' + escapar(url) + '" target="_blank" rel="noopener">Abrir ↗</a></td>' +
+          '</tr>';
+        }
+        html += '</tbody></table></div>';
+        $('resultadosNotion').innerHTML = html;
+      }
+    } catch(err) {
+      $('resultadosNotion').innerHTML = '<div class="info-line" style="background:rgba(220,38,38,0.1); border-color:#dc2626; color:#fca5a5;">Error al buscar en Notion: ' + escapar(err && err.message ? err.message : 'desconocido') + '</div>';
+    } finally {
+      $('btnBuscarNotion').disabled = false;
+      $('btnBuscarNotionText').textContent = '🔎 Buscar en Notion (incluye registros de otros dispositivos)';
+    }
+  }
+
+  // ===== EXPORTAR =====
+  function getRegistrosExportar() {
+    var desde = $('expDesde').value;
+    var hasta = $('expHasta').value;
+    var f = registros.slice();
+    if (desde) f = f.filter(function(r) { return r.fecha >= desde; });
+    if (hasta) f = f.filter(function(r) { return r.fecha <= hasta; });
+    f.sort(function(a,b) {
+      var fa = (a.fecha || '') + (a.horaLlegada || '');
+      var fb = (b.fecha || '') + (b.horaLlegada || '');
+      return fa.localeCompare(fb);
+    });
+    return f;
+  }
+  function exportarCSV() {
+    var datos = getRegistrosExportar();
+    if (datos.length === 0) { toast('No hay registros para exportar', 'error'); return; }
+    var headers = ['Fecha','Llegada','Estudiante','Grado','Tipo Servicio','Razón/Queja','Quien Refiere','Accion','Excusa','Salida','PCS','Escuela','Municipio'];
+    var lines = [headers.join(',')];
+    for (var i = 0; i < datos.length; i++) {
+      var r = datos[i];
+      var row = [r.fecha||'', r.horaLlegada||'', r.nombre||'', r.grado||'', r.tipoServicio||'', r.razon||'', r.quienRefiere||'', r.accion||'', r.excusa||'', r.horaSalida||'', r.pcs?'Sí':'No', r.escuela||'', r.municipio||''];
+      lines.push(row.map(function(v) { return '"' + String(v).replace(/"/g,'""') + '"'; }).join(','));
+    }
+    var csv = '﻿' + lines.join('\n');
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'enfermeria_alc_' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('✓ CSV descargado');
+  }
+  function exportarTexto() {
+    var datos = getRegistrosExportar();
+    if (datos.length === 0) { toast('No hay registros', 'error'); return; }
+    var t = 'LISTA DIARIA DE ESTUDIANTES ATENDIDOS EN ENFERMERÍA\n';
+    t += 'Escuela: ' + ($('escuela').value || 'Antonio Ledée Colón') + '\n';
+    t += 'Municipio: ' + ($('municipio').value || 'Salinas') + '\n\n';
+    t += 'Fecha\tLlegada\tEstudiante\tGrado\tServicio\tRazón/Queja\tRefiere\tAcción\tExcusa\tSalida\tPCS\n';
+    for (var i = 0; i < datos.length; i++) {
+      var r = datos[i];
+      t += (r.fecha||'') + '\t' + (r.horaLlegada||'') + '\t' + (r.nombre||'') + '\t' + (r.grado||'') + '\t' + (r.tipoServicio||'') + '\t' + (r.razon||'') + '\t' + (r.quienRefiere||'') + '\t' + (r.accion||'') + '\t' + (r.excusa||'') + '\t' + (r.horaSalida||'') + '\t' + (r.pcs?'Sí':'No') + '\n';
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function() { toast('✓ Copiado al portapapeles'); })
+        .catch(function() { toast('No se pudo copiar', 'error'); });
+    } else {
+      toast('Tu navegador no permite copiar automáticamente', 'error');
+    }
+  }
+
+  // ===== IMPRIMIR HOJA OFICIAL =====
+  function imprimirHoy() {
+    cambiarTab('hoy');
+
+    var fecha = $('fecha').value;
+    var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    var diasSemana = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    var hoy = fecha ? new Date(fecha + 'T12:00:00') : new Date();
+    var fechaCompleta = diasSemana[hoy.getDay()].charAt(0).toUpperCase() + diasSemana[hoy.getDay()].slice(1) + ', ' + hoy.getDate() + ' de ' + meses[hoy.getMonth()] + ' de ' + hoy.getFullYear();
+
+    if ($('printEscuela')) $('printEscuela').textContent = $('escuela').value;
+    if ($('printMunicipio')) $('printMunicipio').textContent = $('municipio').value;
+    if ($('printFecha')) $('printFecha').textContent = fechaCompleta;
+
+    var tabHoy = $('tab-hoy');
+    if (tabHoy) tabHoy.classList.add('print-active');
+
+    var fechaActual = $('fecha').value;
+    var delDia = registros.filter(function(r) { return r.fecha === fechaActual; });
+    if (delDia.length === 0) {
+      if (!confirm('No hay registros para esta fecha. ¿Imprimir hoja en blanco?')) {
+        if (tabHoy) tabHoy.classList.remove('print-active');
+        return;
+      }
+    }
+
+    setTimeout(function() {
+      window.print();
+      setTimeout(function() {
+        if (tabHoy) tabHoy.classList.remove('print-active');
+      }, 500);
+    }, 400);
+  }
+
+  function borrarLocal() {
+    if (!confirm('¿BORRAR el caché local del artefacto?\n\nLos registros en Notion NO se tocan — pero las vistas de Hoy/Historial quedarán vacías hasta que registres nuevas visitas.')) return;
+    registros = [];
+    guardarLocal();
+    renderHoy();
+    renderHistorial();
+    toast('Caché local borrado');
+  }
+
+  // ===== INIT =====
+  function init() {
+    cargarLocal();
+
+    var hoy = new Date().toISOString().split('T')[0];
+    $('fecha').value = hoy;
+    setHoraActual('horaLlegada');
+
+    var tabs = document.querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+      (function(btn) {
+        btn.addEventListener('click', function() { cambiarTab(btn.getAttribute('data-tab')); });
+      })(tabs[i]);
+    }
+
+    $('btnGuardar').addEventListener('click', guardarRegistro);
+    $('btnLimpiar').addEventListener('click', limpiarFormulario);
+    $('btnHoraLlegada').addEventListener('click', function() { setHoraActual('horaLlegada'); });
+    $('btnHoraSalida').addEventListener('click', function() { setHoraActual('horaSalida'); });
+    $('fecha').addEventListener('change', renderHoy);
+
+    $('searchNombre').addEventListener('input', renderHistorial);
+    $('searchFecha').addEventListener('change', renderHistorial);
+    $('searchServicio').addEventListener('change', renderHistorial);
+    $('btnLimpiarFiltros').addEventListener('click', limpiarFiltros);
+    $('btnBuscarNotion').addEventListener('click', buscarEnNotion);
+
+    $('btnExpCsv').addEventListener('click', exportarCSV);
+    $('btnExpTexto').addEventListener('click', exportarTexto);
+    $('btnImprimir').addEventListener('click', imprimirHoy);
+    $('btnImprimirHoy').addEventListener('click', imprimirHoy);
+    $('btnBorrarTodo').addEventListener('click', borrarLocal);
+
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if ($('tab-registro').style.display !== 'none') guardarRegistro();
+      }
+    });
+
+    renderHoy();
+    renderHistorial();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>
